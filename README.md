@@ -60,14 +60,14 @@ Una línea en el layout raíz y cada web se viste sola según la fecha (hora de 
 
 | Temporada | Fechas | Qué se ve |
 |---|---|---|
-| Halloween | 15 oct – 1 nov | Murciélagos revoloteando por la pantalla |
-| Navidad | 1 dic – 6 ene | Nieve |
-| Nochevieja | 31 dic – 1 ene | Fuegos artificiales y confeti |
-| San Valentín | 1 – 14 feb | Corazones |
-| Carnaval | sábado – martes de Carnaval (según la Pascua) | Confeti |
-| Black Friday | lunes – Cyber Monday | Solo franja (solo si la web lo pide) |
+| Halloween | 15 oct – 1 nov | Banderines; murciélagos ~9 s al entrar |
+| Navidad | 1 dic – 6 ene | Luces de colores y nieve |
+| Nochevieja | 31 dic – 1 ene | Banderines dorados; fuegos ~9 s al entrar y confeti |
+| San Valentín | 1 – 14 feb | Guirnalda de corazones y corazones cayendo |
+| Carnaval | sábado – martes de Carnaval (según la Pascua) | Banderines de colores y confeti |
+| Black Friday | lunes – Cyber Monday | Banderines negro y amarillo (solo si la web lo pide) |
 
-Todas llevan una franja de 5 px arriba con los colores de la temporada y ponen `--k-season-1` / `--k-season-2` en `<html>`. Las tarjetas con la clase `k-season-glow` cogen el borde de temporada.
+Lo fijo: guirnalda arriba, luz ambiente del color de la temporada y borde en las tarjetas con `k-season-glow`. Los murciélagos y los fuegos salen una vez por visita; en carrito, pago, cuenta y admin (`KAOS_SEASON_QUIET`, o la prop `quiet`) no se mueve nada. Ponen `--k-season-1` / `--k-season-2` en `<html>`. Las tarjetas con la clase `k-season-glow` cogen el borde de temporada.
 
 ```tsx
 import KaosSeason from "@kaoticode/kaos/KaosSeason";
