@@ -53,3 +53,24 @@ Componentes: `KaosDock`, `KaosTopBar`, `KaosFooter`, `KaosSponsors`, `KaosFeedba
 Telegram, X, Facebook, correo y copiar enlace).
 
 Las normas de diseño están en [DESIGN.md](DESIGN.md).
+
+## KaosSeason · temáticas de temporada
+
+Una línea en el layout raíz y cada web se viste sola según la fecha (hora de España):
+
+| Temporada | Fechas | Qué se ve |
+|---|---|---|
+| Halloween | 24 oct – 1 nov | Franja naranja/morada, murciélagos y calabazas flotando |
+| Navidad | 1 dic – 6 ene | Franja roja/verde y nieve cayendo |
+| San Valentín | 7 – 14 feb | Franja rosa y corazones |
+| Black Friday | lunes – Cyber Monday | Franja negra y dorada (solo si la web lo pide) |
+
+```tsx
+import KaosSeason from "@kaoticode/kaos/KaosSeason";
+
+<KaosSeason />                                              // webs normales
+<KaosSeason seasons={["navidad", "halloween", "sanvalentin", "blackfriday"]} /> // tiendas
+<KaosSeason season="off" />                                 // apagar
+```
+
+Para probarlo fuera de fecha: `?kaos-season=navidad` (o `halloween`, `sanvalentin`, `blackfriday`, `off`). Sin animación con «reducir movimiento» y oculto al imprimir.
