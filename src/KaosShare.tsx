@@ -169,3 +169,15 @@ export default function KaosShare({
     </>
   );
 }
+
+/**
+ * Fila con el botón «Compartir» alineado a la derecha, para ponerla encima del
+ * contenido de una ficha (receta, evento, producto…) sin tocar su maquetación.
+ */
+export function KaosShareBar(props: Omit<KaosShareProps, "variant">): ReactNode {
+  return (
+    <div className="k-share-bar">
+      <KaosShare {...props} />
+    </div>
+  );
+}
