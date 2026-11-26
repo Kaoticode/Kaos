@@ -1,0 +1,73 @@
+# Al publicar una versión de Kaos, abre una PR en cada web para usarla.
+name: Actualizar las webs
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Etiqueta a llevar a las webs (p. ej. v1.0.1)"
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { repo: Kaoticode/komunly, base: develop, pm: pnpm }
+          - { repo: Kaoticode/LaKancha, base: develop, pm: pnpm }
+          - { repo: Kaoticode/klickum, base: develop, pm: pnpm }
+          - { repo: Kaoticode/kallate, base: main, pm: pnpm }
+          - { repo: Kaoticode/infoodmacion-web, base: main, pm: pnpm }
+          - { repo: Kaoticode/kaoticlub, base: main, pm: pnpm }
+          - { repo: Kaoticode/respetao, base: main, pm: pnpm }
+          - { repo: Kaoticode/lakarta, base: main, pm: pnpm }
+          - { repo: Kaoticode/kaoticode-web, base: main, pm: pnpm }
+          - { repo: Kaoticode/kostumbres, base: main, pm: npm }
+          - { repo: KOMPETENCIA/web, base: main, pm: bun }
+    env:
+      VERSION: ${{ github.event.release.tag_name || inputs.version }}
+      GH_TOKEN: ${{ secrets.KAOS_SYNC_TOKEN }}
+    steps:
+      - name: Clonar la web
+        run: |
+          git clone --depth 1 --branch "${{ matrix.base }}" \
+            "https://x-access-token:${GH_TOKEN}@github.com/${{ matrix.repo }}.git" web
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - uses: pnpm/action-setup@v4
+        if: matrix.pm == 'pnpm'
+        with:
+          version: 10
+      - uses: oven-sh/setup-bun@v2
+        if: matrix.pm == 'bun'
+      - name: Llevar Kaos ${{ env.VERSION }}
+        working-directory: web
+        run: |
+          spec="github:Kaoticode/kaos#${VERSION}"
+          case "${{ matrix.pm }}" in
+            pnpm) pnpm add "@kaoticode/kaos@${spec}" --ignore-scripts ;;
+            npm) npm install "@kaoticode/kaos@${spec}" --ignore-scripts ;;
+            bun) bun add "@kaoticode/kaos@${spec}" ;;
+          esac
+      - name: Abrir la PR
+        working-directory: web
+        run: |
+          if git diff --quiet; then echo "Ya estaba en ${VERSION}"; exit 0; fi
+          branch="kaos/${VERSION}"
+          git config user.name "kaos-bot"
+          git config user.email "kaos-bot@users.noreply.github.com"
+          git checkout -b "$branch"
+          git commit -am "Kaos ${VERSION}"
+          git push -f origin "$branch"
+          gh pr create --repo "${{ matrix.repo }}" --base "${{ matrix.base }}" --head "$branch" \
+            --title "Kaos ${VERSION}" \
+            --body "Actualiza los componentes comunes de Kaoticode a [${VERSION}](https://github.com/Kaoticode/kaos/releases/tag/${VERSION}). Revisa la vista previa de Vercel y fusiona." \
+            || echo "La PR ya existía"
