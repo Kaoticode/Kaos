@@ -3220,3 +3220,58 @@ canvas.k-season {
     display: none;
   }
 }
+
+/* ------------------------------------------------------------------------ */
+/* KaosName · el nombre brilla según el plan (bronce, plata, oro)           */
+/* ------------------------------------------------------------------------ */
+.k-name {
+  min-width: 0;
+}
+
+.k-name--bronze,
+.k-name--silver,
+.k-name--gold {
+  font-weight: 700;
+  background-size: 250% 100%;
+  background-position: 100% 0;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  color: transparent;
+  animation: k-name-shine 4.5s ease-in-out infinite;
+}
+
+.k-name--bronze {
+  background-image: linear-gradient(100deg, #9a5a2c 0%, #c27a3f 35%, #f3c38f 50%, #c27a3f 65%, #9a5a2c 100%);
+  filter: drop-shadow(0 0 6px rgba(205, 127, 50, 0.35));
+}
+
+.k-name--silver {
+  background-image: linear-gradient(100deg, #8d98a4 0%, #c9d1d9 35%, #ffffff 50%, #c9d1d9 65%, #8d98a4 100%);
+  filter: drop-shadow(0 0 6px rgba(180, 195, 210, 0.4));
+}
+
+.k-name--gold {
+  background-image: linear-gradient(100deg, #c9971c 0%, #f5c842 35%, #fff4b0 50%, #f5c842 65%, #c9971c 100%);
+  filter: drop-shadow(0 0 7px rgba(245, 200, 66, 0.45));
+}
+
+@keyframes k-name-shine {
+  0%,
+  55% {
+    background-position: 100% 0;
+  }
+  85%,
+  100% {
+    background-position: 0% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .k-name--bronze,
+  .k-name--silver,
+  .k-name--gold {
+    animation: none;
+    background-position: 50% 0;
+  }
+}
