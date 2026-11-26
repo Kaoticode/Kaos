@@ -152,7 +152,10 @@ export default function KaosPush({
     const vapid = await publicKey();
     if (!vapid) return false;
     try {
-      await navigator.serviceWorker.register(swUrl, { scope: "/" });
+      // Sin «scope»: el natural del service worker (la raíz, o la subruta de
+      // las webs que viven en una, como Kostumbres).
+      await navigator.serviceWorker.register(swUrl);
+      // «ready»: el registro ya activo de esta página (subscribe lo necesita activo).
       const reg = await navigator.serviceWorker.ready;
       const options = { userVisibleOnly: true, applicationServerKey: toKey(vapid) };
       let sub = await reg.pushManager.getSubscription();
