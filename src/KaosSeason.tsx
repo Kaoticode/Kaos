@@ -3,8 +3,13 @@
  * KaosSeason · temáticas de temporada comunes de Kaoticode (familia Kaos).
  *
  * Una línea en el layout raíz y la web se viste sola según la fecha (hora de
- * España). Pensado para que se note sin agobiar: pocas partículas, ninguna
- * captura clics y todo se apaga con «reducir movimiento».
+ * España). Pensado para que se note sin agobiar:
+ *  - Lo fijo (siempre): guirnalda arriba, luz ambiente del color de la
+ *    temporada y borde en las tarjetas con `k-season-glow`.
+ *  - Lo que se mueve: nieve, corazones y confeti caen suaves; murciélagos y
+ *    fuegos artificiales solo ~9 s al entrar, una vez por visita.
+ *  - Nada se mueve en zonas de trabajo (carrito, pago, cuenta, admin…) ni con
+ *    «reducir movimiento», y nada captura clics.
  *
  *   Halloween     15 oct – 1 nov   murciélagos volando por la pantalla
  *   Navidad       1 dic – 6 ene    nieve
@@ -19,7 +24,7 @@
  * Para verlo fuera de fecha: ?kaos-season=halloween (navidad, nochevieja,
  * sanvalentin, carnaval, blackfriday, off).
  */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type KaosSeasonId =
   | "halloween"
@@ -110,6 +115,67 @@ export interface KaosSeasonProps {
   ribbon?: boolean;
   /** Animación (murciélagos, nieve…). Por defecto, sí. */
   particles?: boolean;
+  /** Rutas (prefijos) sin animación: se queda solo lo fijo. */
+  quiet?: string[];
+}
+
+/** Zonas de trabajo: carrito, pago, cuenta, admin y accesos. */
+export const KAOS_SEASON_QUIET = [
+  "/admin",
+  "/cart",
+  "/guest-cart",
+  "/checkout",
+  "/pay",
+  "/payment",
+  "/order",
+  "/user",
+  "/account",
+  "/cuenta",
+  "/profile",
+  "/perfil",
+  "/settings",
+  "/signin",
+  "/signup",
+  "/login",
+  "/register",
+  "/dashboard",
+  "/panel",
+];
+
+const isQuietPath = (path: string, quiet: string[]) =>
+  quiet.some((p) => path === p || path.startsWith(`${p}/`));
+
+/** Ruta actual sin depender del router de cada web (se mira cada segundo). */
+function usePath(): string {
+  const [path, setPath] = useState("");
+  useEffect(() => {
+    const read = () => setPath(window.location.pathname);
+    read();
+    const id = window.setInterval(read, 800);
+    window.addEventListener("popstate", read);
+    return () => {
+      window.clearInterval(id);
+      window.removeEventListener("popstate", read);
+    };
+  }, []);
+  return path;
+}
+
+/** Las animaciones de entrada (murciélagos, fuegos) salen una vez por visita. */
+function introSeen(id: KaosSeasonId): boolean {
+  try {
+    return window.sessionStorage.getItem(`kaos-season-intro:${id}`) === "1";
+  } catch {
+    return false;
+  }
+}
+
+function markIntro(id: KaosSeasonId): void {
+  try {
+    window.sessionStorage.setItem(`kaos-season-intro:${id}`, "1");
+  } catch {
+    /* sin almacenamiento: saldrá en cada carga, sin más */
+  }
 }
 
 export default function KaosSeason({
@@ -117,9 +183,14 @@ export default function KaosSeason({
   seasons = DEFAULT_SEASONS,
   ribbon = true,
   particles = true,
+  quiet = KAOS_SEASON_QUIET,
 }: KaosSeasonProps): React.ReactNode {
   const [active, setActive] = useState<KaosSeasonId | null>(null);
   const [calm, setCalm] = useState(false);
+  const [forcedIntro, setForcedIntro] = useState(false);
+  const [intro, setIntro] = useState<"pending" | "playing" | "done">("pending");
+  const path = usePath();
+  const endIntro = useCallback(() => setIntro("done"), []);
   const seasonsKey = seasons.join();
 
   useEffect(() => {
@@ -133,6 +204,7 @@ export default function KaosSeason({
       id = auto && seasonsKey.split(",").includes(auto) ? auto : null;
     }
     setActive(id);
+    setForcedIntro(isSeason(forced));
     setCalm(window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     const root = document.documentElement;
     if (id) root.dataset.kaosSeason = id;
@@ -142,29 +214,72 @@ export default function KaosSeason({
     };
   }, [season, seasonsKey]);
 
+  const hasIntro = active === "halloween" || active === "nochevieja";
+  const quietHere = !path || isQuietPath(path, quiet);
+
+  // La entrada arranca en la primera página «normal» de la visita.
+  useEffect(() => {
+    if (!active || !hasIntro || intro !== "pending" || quietHere || calm || !particles) return;
+    if (!forcedIntro && introSeen(active)) {
+      setIntro("done");
+      return;
+    }
+    markIntro(active);
+    setIntro("playing");
+  }, [active, hasIntro, intro, quietHere, calm, particles, forcedIntro]);
+
   if (!active) return null;
-  const motion = particles && !calm;
+  const motion = particles && !calm && !quietHere;
 
   return (
     <>
-      {ribbon && (
-        <div
-          className={`k-season-ribbon k-season-ribbon--${active}`}
-          title={KAOS_SEASONS[active].label}
-          aria-hidden
-        />
-      )}
-      {motion && active === "halloween" && <Bats />}
+      {ribbon && <Garland season={active} />}
+      <div className={`k-season-ambient k-season-ambient--${active}`} aria-hidden />
+      {intro === "playing" && active === "halloween" && <Bats onDone={endIntro} />}
+      {intro === "playing" && active === "nochevieja" && <Fireworks onDone={endIntro} />}
       {motion && active === "navidad" && <Falling kind="snow" count={28} />}
       {motion && active === "sanvalentin" && <Falling kind="heart" count={12} />}
       {motion && active === "carnaval" && <Falling kind="confetti" count={22} />}
-      {motion && active === "nochevieja" && (
-        <>
-          <Fireworks />
-          <Falling kind="confetti" count={12} />
-        </>
-      )}
+      {motion && active === "nochevieja" && <Falling kind="confetti" count={10} />}
     </>
+  );
+}
+
+/* ---------------------------------------------------------------------- */
+/* Guirnalda fija arriba: banderines, luces o corazones según la fecha.     */
+/* ---------------------------------------------------------------------- */
+const GARLAND: Record<KaosSeasonId, { kind: "flag" | "bulb" | "heart"; colors: string[] }> = {
+  halloween: { kind: "flag", colors: ["#ff7a1a", "#9b4dff", "#7ed957", "#9b4dff"] },
+  navidad: { kind: "bulb", colors: ["#ff3b4e", "#ffd23f", "#2ecc71", "#4da3ff", "#ff9f1c"] },
+  nochevieja: { kind: "flag", colors: ["#ffd23f", "#f4f1e8", "#c9a227", "#b8bcc6"] },
+  sanvalentin: { kind: "heart", colors: ["#ff4f86", "#ff8fb1", "#c2185b"] },
+  carnaval: { kind: "flag", colors: ["#ff6b6b", "#ffd93d", "#6bcb77", "#4d96ff", "#b76cfd"] },
+  blackfriday: { kind: "flag", colors: ["#ffd400", "#111"] },
+};
+
+function Garland({ season }: { season: KaosSeasonId }) {
+  const { kind, colors } = GARLAND[season];
+  return (
+    <div
+      className={`k-season-garland k-season-garland--${kind}`}
+      title={KAOS_SEASONS[season].label}
+      aria-hidden
+    >
+      {Array.from({ length: 90 }, (_, i) => (
+        <span
+          // biome-ignore lint/suspicious/noArrayIndexKey: adornos fijos
+          key={i}
+          style={
+            {
+              "--k-c": colors[i % colors.length],
+              animationDelay: `${-((i * 0.37) % 3)}s`,
+            } as React.CSSProperties
+          }
+        >
+          {kind === "heart" ? "♥" : null}
+        </span>
+      ))}
+    </div>
   );
 }
 
@@ -202,7 +317,8 @@ function Falling({ kind, count }: { kind: "snow" | "heart" | "confetti"; count: 
 const BAT_PATH =
   "M32 14c-2-4-4-5-6-5 1 2 1 3 0 4-3-3-8-5-14-4 4 2 6 5 6 8-3-2-7-2-10 0 5 1 9 4 11 9 3-3 7-4 10-3l3 4 3-4c3-1 7 0 10 3 2-5 6-8 11-9-3-2-7-2-10 0 0-3 2-6 6-8-6-1-11 1-14 4-1-1-1-2 0-4-2 0-4 1-6 5z";
 
-function Bats({ amount = 7 }: { amount?: number }) {
+/** Revolotean ~9 s y se marchan volando fuera de la pantalla. */
+function Bats({ amount = 7, stay = 9000, onDone }: { amount?: number; stay?: number; onDone: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -224,25 +340,48 @@ function Bats({ amount = 7 }: { amount?: number }) {
       timer: 0.5 + Math.random() * 1.5,
     }));
     let last = performance.now();
+    const start = last;
+    let leaving = false;
     let raf = 0;
     const tick = (now: number) => {
       const dt = Math.min(0.05, (now - last) / 1000);
       last = now;
+      if (!leaving && now - start > stay) {
+        leaving = true;
+        // Cada uno se va por el lado que tiene más cerca (o por arriba).
+        for (const b of bats) {
+          const toLeft = b.x < w / 2;
+          b.tx = toLeft ? -W * 4 : w + W * 4;
+          b.ty = b.y < h / 2 ? -H * 6 : b.y;
+          b.timer = 99;
+        }
+      }
+      let inside = 0;
       for (const b of bats) {
         const lx = b.tx - b.x;
         const ly = b.ty - b.y;
         const len = Math.max(1, Math.hypot(lx, ly));
         b.dx += ((7 * lx) / len - b.dx) * dt * 1.8;
         b.dy += ((7 * ly) / len - b.dy) * dt * 1.8;
-        b.x = Math.max(-W, Math.min(w, b.x + b.dx * dt * 25));
-        b.y = Math.max(-H, Math.min(h, b.y + b.dy * dt * 25));
+        const speed = leaving ? 45 : 25;
+        b.x += b.dx * dt * speed;
+        b.y += b.dy * dt * speed;
+        if (!leaving) {
+          b.x = Math.max(-W, Math.min(w, b.x));
+          b.y = Math.max(-H, Math.min(h, b.y));
+        }
+        if (b.x > -W * 2 && b.x < w + W && b.y > -H * 3 && b.y < h + H) inside++;
         b.timer -= dt;
-        if (b.timer < 0) {
+        if (!leaving && b.timer < 0) {
           b.tx = Math.random() * w;
           b.ty = Math.random() * h;
           b.timer = 1 + Math.random() * 2;
         }
         b.el.style.transform = `translate3d(${b.x}px, ${b.y}px, 0) scaleX(${b.dx < 0 ? -1 : 1})`;
+      }
+      if (leaving && inside === 0) {
+        onDone();
+        return;
       }
       raf = requestAnimationFrame(tick);
     };
@@ -265,7 +404,7 @@ function Bats({ amount = 7 }: { amount?: number }) {
       window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, []);
+  }, [stay, onDone]);
 
   return (
     <div ref={ref} className="k-season k-season--bats" aria-hidden>
@@ -284,7 +423,8 @@ function Bats({ amount = 7 }: { amount?: number }) {
 /* ---------------------------------------------------------------------- */
 /* Nochevieja: unos pocos fuegos artificiales, de vez en cuando.          */
 /* ---------------------------------------------------------------------- */
-function Fireworks() {
+/** Unas cuantas tracas al entrar (~9 s) y fuera. */
+function Fireworks({ stay = 9000, onDone }: { stay?: number; onDone: () => void }) {
   const ref = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -312,8 +452,13 @@ function Fireworks() {
       }
     };
     let raf = 0;
-    const tick = () => {
+    const start = performance.now();
+    const tick = (now: number) => {
       ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      if (now - start > stay && parts.length === 0) {
+        onDone();
+        return;
+      }
       parts = parts.filter((p) => p.a > 0.02);
       for (const p of parts) {
         p.x += p.vx;
@@ -332,14 +477,16 @@ function Fireworks() {
     };
     raf = requestAnimationFrame(tick);
     burst();
-    const timer = window.setInterval(burst, 2600);
+    const timer = window.setInterval(() => {
+      if (performance.now() - start < stay - 1500) burst();
+    }, 1800);
     window.addEventListener("resize", resize);
     return () => {
       cancelAnimationFrame(raf);
       window.clearInterval(timer);
       window.removeEventListener("resize", resize);
     };
-  }, []);
+  }, [stay, onDone]);
 
   return <canvas ref={ref} className="k-season k-season--fireworks" aria-hidden />;
 }

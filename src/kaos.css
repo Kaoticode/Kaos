@@ -3039,10 +3039,11 @@ html[data-kaos-season="blackfriday"] {
 
 /* Tarjetas con el color de la temporada: añade la clase k-season-glow. */
 html[data-kaos-season] .k-season-glow {
-  border-color: color-mix(in srgb, var(--k-season-1) 70%, transparent) !important;
+  border-color: var(--k-season-1) !important;
   box-shadow:
-    0 0 0 1px color-mix(in srgb, var(--k-season-1) 25%, transparent),
-    0 12px 30px -16px color-mix(in srgb, var(--k-season-1) 70%, transparent);
+    0 0 0 1px color-mix(in srgb, var(--k-season-1) 45%, transparent),
+    0 0 22px -6px color-mix(in srgb, var(--k-season-1) 65%, transparent),
+    0 14px 34px -18px var(--k-season-2);
 }
 
 html[data-kaos-season] .k-season-glow:hover {
@@ -3149,46 +3150,107 @@ canvas.k-season {
   }
 }
 
-/* Franja de color arriba del todo, por encima de cualquier barra. */
-.k-season-ribbon {
+/* Luz ambiente: un halo del color de la temporada arriba y en las esquinas. */
+.k-season-ambient {
+  position: fixed;
+  inset: 0;
+  z-index: 39;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 38% at 50% -8%, color-mix(in srgb, var(--k-season-1) 22%, transparent), transparent 70%),
+    radial-gradient(40% 30% at 0% 100%, color-mix(in srgb, var(--k-season-2) 14%, transparent), transparent 70%),
+    radial-gradient(40% 30% at 100% 100%, color-mix(in srgb, var(--k-season-1) 12%, transparent), transparent 70%);
+}
+
+/* Guirnalda fija arriba del todo: cordel + banderines, luces o corazones. */
+.k-season-garland {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 5px;
+  height: 16px;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
   pointer-events: none;
-  background-size: 200% 100%;
-  animation: k-season-ribbon 14s linear infinite;
 }
 
-.k-season-ribbon--halloween {
-  background-image: repeating-linear-gradient(90deg, #ff7a1a 0 22px, #1a1012 22px 34px, #9b4dff 34px 56px, #1a1012 56px 68px);
+.k-season-garland::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 3px;
+  background: color-mix(in srgb, var(--k-season-1) 55%, #222);
 }
 
-.k-season-ribbon--navidad {
-  background-image: repeating-linear-gradient(90deg, #e8283f 0 22px, #fff 22px 28px, #22a35a 28px 50px, #fff 50px 56px);
+.k-season-garland span {
+  position: relative;
+  flex: none;
+  width: 22px;
+  margin: 0 3px;
 }
 
-.k-season-ribbon--nochevieja {
-  background-image: linear-gradient(90deg, #ffd23f, #fff6d0, #c9a227, #ffd23f);
+.k-season-garland--flag span {
+  height: 14px;
+  margin-top: 2px;
+  background: var(--k-c);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.4));
+  transform-origin: 50% 0;
+  animation: k-season-sway 3s ease-in-out infinite alternate;
 }
 
-.k-season-ribbon--sanvalentin {
-  background-image: linear-gradient(90deg, #ff4f86, #c2185b, #ff4f86);
+.k-season-garland--bulb span {
+  width: 9px;
+  height: 12px;
+  margin: 3px 9px 0;
+  border-radius: 45% 45% 50% 50% / 40% 40% 60% 60%;
+  background: var(--k-c);
+  box-shadow:
+    0 0 6px 1px var(--k-c),
+    0 0 14px 2px color-mix(in srgb, var(--k-c) 55%, transparent);
+  animation: k-season-twinkle 3s ease-in-out infinite alternate;
 }
 
-.k-season-ribbon--carnaval {
-  background-image: repeating-linear-gradient(90deg, #ff6b6b 0 16px, #ffd93d 16px 32px, #6bcb77 32px 48px, #4d96ff 48px 64px, #b76cfd 64px 80px);
+.k-season-garland--bulb span::before {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 2px;
+  width: 5px;
+  height: 4px;
+  border-radius: 1px;
+  background: #3a3a3a;
 }
 
-.k-season-ribbon--blackfriday {
-  background-image: linear-gradient(90deg, #000, #ffd400, #000);
+.k-season-garland--heart span {
+  width: auto;
+  margin: 0 7px;
+  font-size: 13px;
+  line-height: 18px;
+  color: var(--k-c);
+  text-shadow: 0 0 6px color-mix(in srgb, var(--k-c) 60%, transparent);
+  transform-origin: 50% 0;
+  animation: k-season-sway 3s ease-in-out infinite alternate;
 }
 
-@keyframes k-season-ribbon {
+@keyframes k-season-sway {
+  from {
+    transform: rotate(-4deg);
+  }
   to {
-    background-position: -200% 0;
+    transform: rotate(4deg);
+  }
+}
+
+@keyframes k-season-twinkle {
+  0%,
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0.45;
   }
 }
 
@@ -3196,14 +3258,15 @@ canvas.k-season {
   .k-season {
     display: none;
   }
-  .k-season-ribbon {
+  .k-season-garland span {
     animation: none;
   }
 }
 
 @media print {
   .k-season,
-  .k-season-ribbon {
+  .k-season-garland,
+  .k-season-ambient {
     display: none;
   }
 }

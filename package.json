@@ -1,6 +1,6 @@
 {
   "name": "@kaoticode/kaos",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Kaos: componentes y estilos comunes de todas las webs de Kaoticode (dock, barra superior, footer, patrocinadores, avisos…).",
   "license": "UNLICENSED",
   "private": true,
