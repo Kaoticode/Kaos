@@ -1,0 +1,22 @@
+{
+  "name": "@kaoticode/kaos",
+  "version": "1.0.0",
+  "description": "Kaos: componentes y estilos comunes de todas las webs de Kaoticode (dock, barra superior, footer, patrocinadores, avisos…).",
+  "license": "UNLICENSED",
+  "private": true,
+  "type": "module",
+  "sideEffects": ["*.css"],
+  "exports": {
+    "./kaos.css": {
+      "style": "./src/kaos.css",
+      "default": "./src/kaos.css"
+    },
+    "./*": "./src/*.tsx",
+    "./KaosApps": "./src/KaosApps.ts"
+  },
+  "files": ["src", "DESIGN.md"],
+  "peerDependencies": {
+    "lucide-react": ">=0.400.0 <2",
+    "react": ">=18"
+  }
+}
