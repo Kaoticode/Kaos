@@ -47,4 +47,9 @@ Token de GitHub (*fine-grained*) con acceso a los repos de las webs y permisos
 **Contents: Read and write** y **Pull requests: Read and write**. Se guarda en
 este repo: *Settings → Secrets and variables → Actions → New repository secret*.
 
+Componentes: `KaosDock`, `KaosTopBar`, `KaosFooter`, `KaosSponsors`, `KaosFeedback`,
+`KaosContact`, `KaosPassport`, `KaosUpdate`, `KaosScrollTop`, `KaosMarquee` y
+`KaosShare` (botón de compartir: hoja nativa del móvil o panel con WhatsApp,
+Telegram, X, Facebook, correo y copiar enlace).
+
 Las normas de diseño están en [DESIGN.md](DESIGN.md).
