@@ -118,6 +118,21 @@ En el móvil la barra es siempre plana, pegada arriba y de 60 px: nada de píldo
   enseña lo que dijo el servidor y siempre da salida: **Reintentar** y **Volver**. Desde
   `ErrorMessage`.
 
+## Avisos push (KaosPush)
+
+Al iniciar sesión, todas las webs piden los avisos con la misma tarjeta (`KaosPush.tsx`,
+estilos `k-push*`), encima del menú de abajo: «¿Te avisamos?» con **Activar** y una X
+(«Ahora no», se respeta 3 días). El permiso se pide al tocar, nunca solo al entrar.
+
+- Ya aceptados: se enlaza el dispositivo a la cuenta en silencio, una vez por visita.
+- Bloqueados: no se insiste.
+- iPhone/iPad fuera de la app instalada: explica «Compartir → Añadir a pantalla de inicio»
+  (cada dos semanas como mucho), porque Safari solo da avisos ahí.
+- La suscripción la guarda el servidor de la web **con el token** (`save`): Komunly enlaza
+  el aviso a la cuenta solo por el token. La clave pública sale de `GET /push/public-key`.
+- Las webs sin service worker copian `templates/sw.js` a `public/sw.js` (cambiando
+  `APP_NAME`): muestra el aviso y al tocarlo abre esa página de la misma web.
+
 ## Tokens de shadcn
 
 `kaos.css` redefine con `:root:root` los tokens de shadcn (`--background`, `--primary`,
