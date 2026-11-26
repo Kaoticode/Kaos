@@ -2994,6 +2994,15 @@ body:has(.k-topbar--desktop) {
   clip: rect(0 0 0 0);
 }
 
+.k-share-bar {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 12px 16px 0;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .k-share[open] {
     animation: none;
