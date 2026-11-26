@@ -3280,6 +3280,9 @@ canvas.k-season {
 
 /* KaosPlanBadge · etiqueta «Plan Oro/Plata/Bronce» (perfiles). */
 .k-plan-badge {
+  /* Solo lo que ocupa el texto, también dentro de columnas flex. */
+  width: fit-content;
+  max-width: 100%;
   display: inline-flex;
   align-items: center;
   gap: 6px;
