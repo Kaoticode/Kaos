@@ -99,6 +99,7 @@ export default function KaosPush({
   save,
   apiUrl,
   vapidKey,
+  getKey,
   swUrl = "/sw.js",
   reason,
 }: {
@@ -112,6 +113,8 @@ export default function KaosPush({
   apiUrl?: string;
   /** Clave pública VAPID si la web la tiene configurada (va antes que la de la API). */
   vapidKey?: string;
+  /** Pide la clave al servidor de la web (que la saca de Komunly): sin variables de entorno. */
+  getKey?: () => Promise<string | null>;
   /** Service worker que muestra los avisos (con manejador de «push»). */
   swUrl?: string;
   /** De qué se avisa: «cuando haya sonidos nuevos». */
@@ -126,6 +129,13 @@ export default function KaosPush({
   const publicKey = async (): Promise<string | null> => {
     if (key.current) return key.current;
     if (vapidKey) return (key.current = vapidKey);
+    if (getKey) {
+      try {
+        return (key.current = (await getKey()) || null);
+      } catch {
+        return null;
+      }
+    }
     if (!apiUrl) return null;
     try {
       const res = await fetch(`${apiUrl.replace(/\/$/, "")}/push/public-key`);
