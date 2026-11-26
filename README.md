@@ -60,17 +60,21 @@ Una línea en el layout raíz y cada web se viste sola según la fecha (hora de 
 
 | Temporada | Fechas | Qué se ve |
 |---|---|---|
-| Halloween | 24 oct – 1 nov | Franja naranja/morada, murciélagos y calabazas flotando |
-| Navidad | 1 dic – 6 ene | Franja roja/verde y nieve cayendo |
-| San Valentín | 7 – 14 feb | Franja rosa y corazones |
-| Black Friday | lunes – Cyber Monday | Franja negra y dorada (solo si la web lo pide) |
+| Halloween | 15 oct – 1 nov | Murciélagos revoloteando por la pantalla |
+| Navidad | 1 dic – 6 ene | Nieve |
+| Nochevieja | 31 dic – 1 ene | Fuegos artificiales y confeti |
+| San Valentín | 1 – 14 feb | Corazones |
+| Carnaval | sábado – martes de Carnaval (según la Pascua) | Confeti |
+| Black Friday | lunes – Cyber Monday | Solo franja (solo si la web lo pide) |
+
+Todas llevan una franja de 5 px arriba con los colores de la temporada y ponen `--k-season-1` / `--k-season-2` en `<html>`. Las tarjetas con la clase `k-season-glow` cogen el borde de temporada.
 
 ```tsx
 import KaosSeason from "@kaoticode/kaos/KaosSeason";
 
-<KaosSeason />                                              // webs normales
-<KaosSeason seasons={["navidad", "halloween", "sanvalentin", "blackfriday"]} /> // tiendas
-<KaosSeason season="off" />                                 // apagar
+<KaosSeason />                                     // webs normales
+<KaosSeason seasons={[...todas, "blackfriday"]} /> // tiendas
+<KaosSeason season="off" />                        // apagar
 ```
 
-Para probarlo fuera de fecha: `?kaos-season=navidad` (o `halloween`, `sanvalentin`, `blackfriday`, `off`). Sin animación con «reducir movimiento» y oculto al imprimir.
+Para probarlo fuera de fecha: `?kaos-season=halloween` (o `navidad`, `nochevieja`, `sanvalentin`, `carnaval`, `blackfriday`, `off`). Sin animación con «reducir movimiento» y oculto al imprimir.

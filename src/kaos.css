@@ -3010,8 +3010,45 @@ body:has(.k-topbar--desktop) {
 }
 
 /* ------------------------------------------------------------------------ */
-/* KaosSeason · temáticas de temporada (Navidad, Halloween, San Valentín…)  */
+/* KaosSeason · temáticas de temporada (Halloween, Navidad, Carnaval…)      */
 /* ------------------------------------------------------------------------ */
+html[data-kaos-season="halloween"] {
+  --k-season-1: #ff7a1a;
+  --k-season-2: #9b4dff;
+}
+html[data-kaos-season="navidad"] {
+  --k-season-1: #e8283f;
+  --k-season-2: #22a35a;
+}
+html[data-kaos-season="nochevieja"] {
+  --k-season-1: #ffd23f;
+  --k-season-2: #f4f1e8;
+}
+html[data-kaos-season="sanvalentin"] {
+  --k-season-1: #ff4f86;
+  --k-season-2: #c2185b;
+}
+html[data-kaos-season="carnaval"] {
+  --k-season-1: #ffd93d;
+  --k-season-2: #4d96ff;
+}
+html[data-kaos-season="blackfriday"] {
+  --k-season-1: #ffd400;
+  --k-season-2: #111;
+}
+
+/* Tarjetas con el color de la temporada: añade la clase k-season-glow. */
+html[data-kaos-season] .k-season-glow {
+  border-color: color-mix(in srgb, var(--k-season-1) 70%, transparent) !important;
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--k-season-1) 25%, transparent),
+    0 12px 30px -16px color-mix(in srgb, var(--k-season-1) 70%, transparent);
+}
+
+html[data-kaos-season] .k-season-glow:hover {
+  border-color: var(--k-season-1) !important;
+}
+
 .k-season {
   position: fixed;
   inset: 0;
@@ -3020,31 +3057,43 @@ body:has(.k-topbar--desktop) {
   pointer-events: none;
 }
 
+canvas.k-season {
+  width: 100%;
+  height: 100%;
+}
+
+/* Caída suave: nieve, corazones y confeti. */
 .k-season__p {
   position: absolute;
-  top: -10%;
+  top: -6%;
   line-height: 1;
-  opacity: 0.75;
   will-change: transform;
-  animation-name: k-season-fall;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
+  animation: k-season-fall linear infinite;
 }
 
-.k-season--navidad .k-season__p {
-  color: #fff;
-  text-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
+.k-season--snow .k-season__p {
+  width: calc(6px * var(--k-s));
+  height: calc(6px * var(--k-s));
+  border-radius: 50%;
+  background: #fff;
+  opacity: 0.85;
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.7);
 }
 
-.k-season--halloween .k-season__p {
-  opacity: 0.55;
-  animation-name: k-season-float;
+.k-season--heart .k-season__p {
+  animation-name: k-season-drift;
+  font-size: calc(1.1rem * var(--k-s));
+  color: #ff4f86;
+  opacity: 0.7;
+  text-shadow: 0 0 8px rgba(255, 79, 134, 0.5);
 }
 
-.k-season--sanvalentin .k-season__p {
-  color: #ff5c8a;
-  opacity: 0.6;
-  animation-name: k-season-float;
+.k-season--confetti .k-season__p {
+  width: calc(9px * var(--k-s));
+  height: calc(5px * var(--k-s));
+  border-radius: 1px;
+  background: var(--k-c);
+  opacity: 0.85;
 }
 
 @keyframes k-season-fall {
@@ -3052,56 +3101,103 @@ body:has(.k-topbar--desktop) {
     transform: translate3d(0, 0, 0) rotate(0deg);
   }
   50% {
-    transform: translate3d(18px, 55vh, 0) rotate(160deg);
+    transform: translate3d(var(--k-sway), 55vh, 0) rotate(180deg);
   }
   to {
-    transform: translate3d(-12px, 115vh, 0) rotate(320deg);
+    transform: translate3d(calc(var(--k-sway) * -0.5), 112vh, 0) rotate(360deg);
   }
 }
 
-/* Halloween y San Valentín suben despacio desde abajo. */
-@keyframes k-season-float {
+/* Los corazones bajan sin darse la vuelta. */
+@keyframes k-season-drift {
   from {
-    transform: translate3d(0, 115vh, 0) scale(0.9);
+    transform: translate3d(0, 0, 0);
   }
   50% {
-    transform: translate3d(20px, 55vh, 0) scale(1);
+    transform: translate3d(var(--k-sway), 55vh, 0) rotate(-12deg);
   }
   to {
-    transform: translate3d(-10px, -10vh, 0) scale(0.9);
+    transform: translate3d(calc(var(--k-sway) * -0.5), 112vh, 0) rotate(10deg);
   }
 }
 
-/* Franja fina de color arriba del todo, por encima de cualquier barra. */
+/* Halloween: murciélagos con aleteo; se ven en webs claras y oscuras. */
+.k-season__bat {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 48px;
+  height: 26px;
+  will-change: transform;
+}
+
+.k-season__bat svg {
+  width: 100%;
+  height: 100%;
+  fill: #1c1024;
+  filter: drop-shadow(0 0 3px rgba(255, 122, 26, 0.85)) drop-shadow(0 0 8px rgba(155, 77, 255, 0.45));
+  transform-origin: 50% 60%;
+  animation: k-season-flap 0.18s ease-in-out infinite alternate;
+}
+
+@keyframes k-season-flap {
+  from {
+    transform: scaleY(1);
+  }
+  to {
+    transform: scaleY(0.6) translateY(2px);
+  }
+}
+
+/* Franja de color arriba del todo, por encima de cualquier barra. */
 .k-season-ribbon {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 1000;
-  height: 4px;
+  height: 5px;
   pointer-events: none;
-}
-
-.k-season-ribbon--navidad {
-  background: repeating-linear-gradient(90deg, #c8102e 0 18px, #fff 18px 24px, #1b7a3a 24px 42px, #fff 42px 48px);
+  background-size: 200% 100%;
+  animation: k-season-ribbon 14s linear infinite;
 }
 
 .k-season-ribbon--halloween {
-  background: repeating-linear-gradient(90deg, #ff7a1a 0 18px, #1a1012 18px 30px, #7b2cbf 30px 42px, #1a1012 42px 54px);
+  background-image: repeating-linear-gradient(90deg, #ff7a1a 0 22px, #1a1012 22px 34px, #9b4dff 34px 56px, #1a1012 56px 68px);
+}
+
+.k-season-ribbon--navidad {
+  background-image: repeating-linear-gradient(90deg, #e8283f 0 22px, #fff 22px 28px, #22a35a 28px 50px, #fff 50px 56px);
+}
+
+.k-season-ribbon--nochevieja {
+  background-image: linear-gradient(90deg, #ffd23f, #fff6d0, #c9a227, #ffd23f);
 }
 
 .k-season-ribbon--sanvalentin {
-  background: linear-gradient(90deg, #ff5c8a, #c2185b, #ff5c8a);
+  background-image: linear-gradient(90deg, #ff4f86, #c2185b, #ff4f86);
+}
+
+.k-season-ribbon--carnaval {
+  background-image: repeating-linear-gradient(90deg, #ff6b6b 0 16px, #ffd93d 16px 32px, #6bcb77 32px 48px, #4d96ff 48px 64px, #b76cfd 64px 80px);
 }
 
 .k-season-ribbon--blackfriday {
-  background: linear-gradient(90deg, #000, #ffd400, #000);
+  background-image: linear-gradient(90deg, #000, #ffd400, #000);
+}
+
+@keyframes k-season-ribbon {
+  to {
+    background-position: -200% 0;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .k-season {
     display: none;
+  }
+  .k-season-ribbon {
+    animation: none;
   }
 }
 
