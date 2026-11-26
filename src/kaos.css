@@ -3247,8 +3247,9 @@ canvas.k-season {
 }
 
 .k-name--silver {
-  background-image: linear-gradient(100deg, #8d98a4 0%, #c9d1d9 35%, #ffffff 50%, #c9d1d9 65%, #8d98a4 100%);
-  filter: drop-shadow(0 0 6px rgba(180, 195, 210, 0.4));
+  /* Acero: más oscuro en reposo y destello blanco azulado (no se confunde con el blanco normal). */
+  background-image: linear-gradient(100deg, #5f7186 0%, #94a8bd 30%, #e9f3ff 48%, #ffffff 50%, #e9f3ff 52%, #94a8bd 70%, #5f7186 100%);
+  filter: drop-shadow(0 0 1px rgba(230, 240, 255, 0.5)) drop-shadow(0 0 7px rgba(120, 170, 235, 0.55));
 }
 
 .k-name--gold {
