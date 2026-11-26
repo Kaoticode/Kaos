@@ -3232,13 +3232,15 @@ canvas.k-season {
 .k-name--silver,
 .k-name--gold {
   font-weight: 700;
-  background-size: 250% 100%;
-  background-position: 100% 0;
+  /* El degradado se repite y avanza sin parar: un brillo continuo, sin cortes. */
+  background-size: 200% 100%;
+  background-repeat: repeat-x;
+  background-position: 0% 0;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: k-name-shine 4.5s ease-in-out infinite;
+  animation: k-name-shine 3.6s linear infinite;
 }
 
 .k-name--bronze {
@@ -3258,13 +3260,12 @@ canvas.k-season {
 }
 
 @keyframes k-name-shine {
-  0%,
-  55% {
-    background-position: 100% 0;
-  }
-  85%,
-  100% {
+  from {
     background-position: 0% 0;
+  }
+  /* -200 % = exactamente un ancho del degradado: la vuelta empalma sin salto. */
+  to {
+    background-position: -200% 0;
   }
 }
 
@@ -3273,6 +3274,37 @@ canvas.k-season {
   .k-name--silver,
   .k-name--gold {
     animation: none;
-    background-position: 50% 0;
+    background-position: -50% 0;
   }
+}
+
+/* KaosPlanBadge · etiqueta «Plan Oro/Plata/Bronce» (perfiles). */
+.k-plan-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 12px;
+  border-radius: 999px;
+  font: 800 0.72rem/1.4 var(--k-font-ui, inherit);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.k-plan-badge--bronze {
+  background: rgba(205, 127, 50, 0.16);
+  color: #e0a46a;
+  box-shadow: inset 0 0 0 1px rgba(205, 127, 50, 0.35);
+}
+
+.k-plan-badge--silver {
+  background: rgba(120, 170, 235, 0.16);
+  color: #b9cde3;
+  box-shadow: inset 0 0 0 1px rgba(148, 168, 189, 0.45);
+}
+
+.k-plan-badge--gold {
+  background: rgba(245, 200, 66, 0.16);
+  color: #f5c842;
+  box-shadow: inset 0 0 0 1px rgba(245, 200, 66, 0.4);
 }
