@@ -78,3 +78,17 @@ import KaosSeason from "@kaoticode/kaos/KaosSeason";
 ```
 
 Para probarlo fuera de fecha: `?kaos-season=halloween` (o `navidad`, `nochevieja`, `sanvalentin`, `carnaval`, `blackfriday`, `off`). Sin animación con «reducir movimiento» y oculto al imprimir.
+
+## KaosName · el nombre brilla según el plan
+
+Bronce en marrón, plata en plateado y oro en dorado, igual que en Komunly. El nivel se pide a la API pública de Komunly (`/public/plan-tiers`), agrupando todos los nombres de la pantalla en una sola consulta y guardándolo 5 minutos. Si la web ya sabe el nivel, se le pasa con `tier`.
+
+```tsx
+import KaosName from "@kaoticode/kaos/KaosName";
+
+<KaosName name={author.username} userId={author.id} />   // por id de Komunly (lo mejor)
+<KaosName name={user.username} />                       // por nombre de usuario
+<KaosName name={user.username} tier="gold" />            // nivel ya conocido
+```
+
+`configureKaosNames({ apiUrl })` cambia la API (por defecto, la de producción). Sin animación con «reducir movimiento».
