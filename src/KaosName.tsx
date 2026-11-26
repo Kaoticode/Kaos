@@ -139,3 +139,21 @@ export default function KaosName({
     </Tag>
   );
 }
+
+export interface KaosPlanBadgeProps {
+  userId?: string | null;
+  username?: string | null;
+  tier?: KaosPlanTier | null;
+  className?: string;
+}
+
+/** Etiqueta «Plan Oro/Plata/Bronce» para perfiles. No pinta nada sin plan. */
+export function KaosPlanBadge({ userId, username, tier, className }: KaosPlanBadgeProps): React.ReactNode {
+  const plan = useKaosPlanTier({ userId, username, tier });
+  if (!plan) return null;
+  return (
+    <span className={`k-plan-badge k-plan-badge--${plan}${className ? ` ${className}` : ""}`}>
+      Plan {LABEL[plan]}
+    </span>
+  );
+}
