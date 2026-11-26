@@ -3289,8 +3289,8 @@ canvas.k-season {
   padding: 3px 12px;
   border-radius: 999px;
   font: 800 0.72rem/1.4 var(--k-font-ui, inherit);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
+  /* El nombre del plan tal cual se escribió en el admin. */
+  letter-spacing: 0.02em;
   white-space: nowrap;
 }
 
