@@ -27,10 +27,17 @@ export function configureKaosNames(options: { apiUrl?: string }): void {
   if (options.apiUrl) apiUrl = options.apiUrl.replace(/\/+$/, "");
 }
 
-type Entry = { tier: KaosPlanTier | null; at: number };
+/** Plan de un usuario: nivel (color) y nombre tal cual está en el admin. */
+export interface KaosPlan {
+  tier: KaosPlanTier | null;
+  name: string | null;
+}
+
+type Entry = KaosPlan & { at: number };
+const NONE: KaosPlan = { tier: null, name: null };
 const cache = new Map<string, Entry>();
 const queue = new Set<string>();
-const listeners = new Map<string, Set<(tier: KaosPlanTier | null) => void>>();
+const listeners = new Map<string, Set<(plan: KaosPlan) => void>>();
 let timer: ReturnType<typeof setTimeout> | null = null;
 
 const keyOf = (userId?: string | null, username?: string | null): string | null =>
@@ -39,9 +46,12 @@ const keyOf = (userId?: string | null, username?: string | null): string | null 
 const asTier = (value: unknown): KaosPlanTier | null =>
   typeof value === "string" && TIERS.includes(value) ? (value as KaosPlanTier) : null;
 
-function settle(key: string, tier: KaosPlanTier | null): void {
-  cache.set(key, { tier, at: Date.now() });
-  for (const fn of listeners.get(key) ?? []) fn(tier);
+const asName = (value: unknown): string | null =>
+  typeof value === "string" && value.trim() ? value.trim().slice(0, 80) : null;
+
+function settle(key: string, plan: KaosPlan): void {
+  cache.set(key, { ...plan, at: Date.now() });
+  for (const fn of listeners.get(key) ?? []) fn(plan);
 }
 
 async function flush(): Promise<void> {
@@ -58,12 +68,22 @@ async function flush(): Promise<void> {
     try {
       const res = await fetch(`${apiUrl}/public/plan-tiers?${qs}`, { credentials: "omit" });
       if (!res.ok) throw new Error(String(res.status));
-      const data = (await res.json()) as { ids?: Record<string, unknown>; usernames?: Record<string, unknown> };
-      for (const id of ids) settle(`id:${id}`, asTier(data.ids?.[id]));
-      for (const name of names) settle(`u:${name}`, asTier(data.usernames?.[name]));
+      const data = (await res.json()) as {
+        ids?: Record<string, unknown>;
+        usernames?: Record<string, unknown>;
+        names?: { ids?: Record<string, unknown>; usernames?: Record<string, unknown> };
+      };
+      for (const id of ids) {
+        const tier = asTier(data.ids?.[id]);
+        settle(`id:${id}`, { tier, name: tier ? asName(data.names?.ids?.[id]) : null });
+      }
+      for (const name of names) {
+        const tier = asTier(data.usernames?.[name]);
+        settle(`u:${name}`, { tier, name: tier ? asName(data.names?.usernames?.[name]) : null });
+      }
     } catch {
       // Sin API (o versión antigua): el nombre se queda normal, sin reintentar en bucle.
-      for (const k of chunk) settle(k, null);
+      for (const k of chunk) settle(k, NONE);
     }
   }
 }
@@ -75,36 +95,48 @@ function request(key: string): void {
   if (!timer) timer = setTimeout(flush, 40);
 }
 
+/** Plan de un usuario (nivel y nombre); vacío mientras no se sabe o si no tiene. */
+export function useKaosPlan(user: {
+  userId?: string | null;
+  username?: string | null;
+  tier?: KaosPlanTier | null;
+  planName?: string | null;
+}): KaosPlan {
+  const known = user.tier !== undefined;
+  const key = known ? null : keyOf(user.userId, user.username);
+  const [plan, setPlan] = useState<KaosPlan>(() => {
+    if (known) return { tier: asTier(user.tier), name: asName(user.planName) };
+    const hit = key ? cache.get(key) : undefined;
+    return hit ? { tier: hit.tier, name: hit.name } : NONE;
+  });
+
+  useEffect(() => {
+    if (known) {
+      setPlan({ tier: asTier(user.tier), name: asName(user.planName) });
+      return;
+    }
+    if (!key) return;
+    const set = listeners.get(key) ?? new Set();
+    set.add(setPlan);
+    listeners.set(key, set);
+    const hit = cache.get(key);
+    if (hit) setPlan({ tier: hit.tier, name: hit.name });
+    request(key);
+    return () => {
+      set.delete(setPlan);
+    };
+  }, [key, known, user.tier, user.planName]);
+
+  return plan;
+}
+
 /** Nivel del plan de un usuario (null mientras no se sabe o si no tiene). */
 export function useKaosPlanTier(user: {
   userId?: string | null;
   username?: string | null;
   tier?: KaosPlanTier | null;
 }): KaosPlanTier | null {
-  const known = user.tier !== undefined;
-  const key = known ? null : keyOf(user.userId, user.username);
-  const [tier, setTier] = useState<KaosPlanTier | null>(() =>
-    known ? asTier(user.tier) : key ? (cache.get(key)?.tier ?? null) : null,
-  );
-
-  useEffect(() => {
-    if (known) {
-      setTier(asTier(user.tier));
-      return;
-    }
-    if (!key) return;
-    const set = listeners.get(key) ?? new Set();
-    set.add(setTier);
-    listeners.set(key, set);
-    const hit = cache.get(key);
-    if (hit) setTier(hit.tier);
-    request(key);
-    return () => {
-      set.delete(setTier);
-    };
-  }, [key, known, user.tier]);
-
-  return tier;
+  return useKaosPlan(user).tier;
 }
 
 export interface KaosNameProps {
@@ -144,16 +176,25 @@ export interface KaosPlanBadgeProps {
   userId?: string | null;
   username?: string | null;
   tier?: KaosPlanTier | null;
+  /** Nombre del plan ya conocido (si no, se pide a la API con el nivel). */
+  planName?: string | null;
   className?: string;
 }
 
-/** Etiqueta «Plan Oro/Plata/Bronce» para perfiles. No pinta nada sin plan. */
-export function KaosPlanBadge({ userId, username, tier, className }: KaosPlanBadgeProps): React.ReactNode {
-  const plan = useKaosPlanTier({ userId, username, tier });
-  if (!plan) return null;
+/**
+ * Etiqueta con el nombre del plan (p. ej. «K-Gold»), del color de su nivel.
+ * Si la API aún no manda el nombre, pone «Plan Oro/Plata/Bronce».
+ * No pinta nada sin plan.
+ */
+export function KaosPlanBadge({ userId, username, tier, planName, className }: KaosPlanBadgeProps): React.ReactNode {
+  const plan = useKaosPlan({ userId, username, tier, planName });
+  if (!plan.tier) return null;
   return (
-    <span className={`k-plan-badge k-plan-badge--${plan}${className ? ` ${className}` : ""}`}>
-      Plan {LABEL[plan]}
+    <span
+      className={`k-plan-badge k-plan-badge--${plan.tier}${className ? ` ${className}` : ""}`}
+      title={`Plan ${LABEL[plan.tier]}`}
+    >
+      {plan.name ?? `Plan ${LABEL[plan.tier]}`}
     </span>
   );
 }
