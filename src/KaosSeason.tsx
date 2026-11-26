@@ -257,28 +257,53 @@ const GARLAND: Record<KaosSeasonId, { kind: "flag" | "bulb" | "heart"; colors: s
   blackfriday: { kind: "flag", colors: ["#ffd400", "#111"] },
 };
 
+/** Un tramo de guirnalda en SVG (se repite en horizontal como fondo). */
+function garlandSvg(kind: "flag" | "bulb" | "heart", colors: string[], dim = false): string {
+  const step = kind === "bulb" ? 27 : kind === "heart" ? 26 : 28;
+  const w = step * colors.length;
+  const shapes = colors
+    .map((c, i) => {
+      const x = i * step;
+      if (kind === "flag") {
+        return `<polygon points="${x + 3},3 ${x + 25},3 ${x + 14},17" fill="${c}" stroke="rgba(0,0,0,.35)" stroke-width=".8"/>`;
+      }
+      if (kind === "heart") {
+        const cx = x + 13;
+        return `<path transform="translate(${cx - 7} 4)" d="M7 12C-2 6 1-1 7 3c6-4 9 3 0 9z" fill="${c}"/>`;
+      }
+      const cx = x + 13.5;
+      if (dim) {
+        // Capa de parpadeo: apaga una de cada dos bombillas.
+        return i % 2 ? `<ellipse cx="${cx}" cy="11" rx="4.6" ry="6" fill="#2a2a2a" opacity=".75"/>` : "";
+      }
+      return `<ellipse cx="${cx}" cy="11" rx="7" ry="8.5" fill="${c}" opacity=".35" filter="url(#g)"/><ellipse cx="${cx}" cy="11" rx="4.6" ry="6" fill="${c}"/><rect x="${cx - 2.5}" y="2.5" width="5" height="4" rx="1" fill="#3a3a3a"/>`;
+    })
+    .join("");
+  const defs = kind === "bulb" && !dim ? '<defs><filter id="g"><feGaussianBlur stdDeviation="2"/></filter></defs>' : "";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="20" viewBox="0 0 ${w} 20">${defs}${shapes}</svg>`;
+  return `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+}
+
+/**
+ * Guirnalda fija: un único elemento con el dibujo repetido (sin animar cada
+ * pieza, para que el scroll vaya fino en móvil). En Navidad, una sola capa
+ * encima apaga y enciende la mitad de las luces.
+ */
 function Garland({ season }: { season: KaosSeasonId }) {
   const { kind, colors } = GARLAND[season];
   return (
     <div
       className={`k-season-garland k-season-garland--${kind}`}
+      style={{ backgroundImage: garlandSvg(kind, colors) }}
       title={KAOS_SEASONS[season].label}
       aria-hidden
     >
-      {Array.from({ length: 90 }, (_, i) => (
+      {kind === "bulb" && (
         <span
-          // biome-ignore lint/suspicious/noArrayIndexKey: adornos fijos
-          key={i}
-          style={
-            {
-              "--k-c": colors[i % colors.length],
-              animationDelay: `${-((i * 0.37) % 3)}s`,
-            } as React.CSSProperties
-          }
-        >
-          {kind === "heart" ? "♥" : null}
-        </span>
-      ))}
+          className="k-season-garland__twinkle"
+          style={{ backgroundImage: garlandSvg(kind, colors, true) }}
+        />
+      )}
     </div>
   );
 }
