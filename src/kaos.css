@@ -2547,6 +2547,26 @@ body:has(.k-topbar--desktop) {
   font-weight: 600;
 }
 
+/* Casilla de comunicaciones comerciales (opcional, desmarcada por defecto). */
+.k-pass__consent {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--k-text-2);
+  font-size: 0.8rem;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.k-pass__consent input {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 1px 0 0;
+  accent-color: var(--k-accent);
+  cursor: pointer;
+}
+
 .k-pass__subtitle {
   display: flex;
   align-items: center;

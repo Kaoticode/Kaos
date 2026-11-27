@@ -34,6 +34,11 @@ export interface KaosSignUpData {
   /** AAAA-MM-DD */
   birthDate: string;
   password: string;
+  /**
+   * Acepta recibir novedades y ofertas por correo de las apps de Kaoticode.
+   * Casilla aparte, desmarcada por defecto (RGPD): mándala a Komunly tal cual.
+   */
+  marketingConsent: boolean;
 }
 
 type Result = Promise<string | null | undefined>;
@@ -356,6 +361,7 @@ function SignUp({
       phone: v("phone").replace(/[^\d+]/g, ""),
       birthDate: v("birthDate"),
       password: v("password"),
+      marketingConsent: fd.get("marketingConsent") === "on",
     };
     const next: SignUpErrors = {};
     if (data.username.length < 3) next.username = "Mínimo 3 caracteres";
@@ -438,6 +444,14 @@ function SignUp({
           autoComplete="new-password"
         />
       </Field>
+      <label className="k-pass__consent">
+        <input type="checkbox" name="marketingConsent" />
+        <span>
+          Quiero recibir por correo novedades, ofertas y sorteos de las apps de
+          Kaoticode (Komunly, Klickum, Kallate, Kaoticlub, Infoodmación…). Es
+          opcional y puedes darte de baja cuando quieras.
+        </span>
+      </label>
       <p className="k-pass__legal">
         Al continuar, confirmo que he leído y acepto los{" "}
         <a href={KAOTICODE.legalUrl} target="_blank" rel="noopener noreferrer">
