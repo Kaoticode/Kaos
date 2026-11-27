@@ -453,9 +453,13 @@ function SignUp({
         </span>
       </label>
       <p className="k-pass__legal">
-        Al continuar, confirmo que he leído y acepto los{" "}
+        Al continuar, acepto los{" "}
         <a href={KAOTICODE.legalUrl} target="_blank" rel="noopener noreferrer">
-          Términos y Condiciones y la Política de Privacidad
+          Términos y Condiciones
+        </a>{" "}
+        y confirmo que he leído la{" "}
+        <a href={KAOTICODE.privacyUrl} target="_blank" rel="noopener noreferrer">
+          Política de Privacidad
         </a>{" "}
         de Kaoticode.
       </p>
