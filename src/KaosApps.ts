@@ -102,6 +102,8 @@ export const KAOTICODE = {
   /** Hazte patrocinador de cualquier app. */
   sponsorUrl: "https://www.kaoticode.com/patrocinadores",
   legalUrl: "https://www.kaoticode.com/terminos-y-condiciones",
+  privacyUrl: "https://www.kaoticode.com/terminos-y-condiciones/privacidad",
+  cookiesUrl: "https://www.kaoticode.com/terminos-y-condiciones/cookies",
   contactUrl: "https://wa.me/+34614234850",
 } as const;
 

@@ -145,7 +145,7 @@ export default function KaosFooter({
   const ext = (href: string) => !href.startsWith("/");
   const contact = own.contact ?? "/contacto";
   const legal = own.legal ?? KAOTICODE.legalUrl;
-  const privacy = own.privacy ?? KAOTICODE.legalUrl;
+  const privacy = own.privacy ?? KAOTICODE.privacyUrl;
   const terms = own.terms ?? KAOTICODE.legalUrl;
   const info: KaosFooterLink[] = [
     { label: "Contacto", href: contact, external: ext(contact) },
